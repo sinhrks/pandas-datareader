@@ -71,7 +71,6 @@ class YahooDailyReader(_DailyBaseReader):
         }
         return params
 
-
     def read(self):
         """ read one data from specified URL """
         df = super(YahooDailyReader, self).read()
@@ -80,6 +79,15 @@ class YahooDailyReader(_DailyBaseReader):
         if self.adjust_price:
             df = _adjust_prices(df)
         return df
+
+    def _read_lines(self, out):
+        rs = super(YahooDailyReader, self)._read_lines(out)
+        # Yahoo! Finance sometimes does this awesome thing where they
+        # return 2 rows for the most recent business day
+        if len(rs) > 2 and rs.index[-1] == rs.index[-2]:  # pragma: no cover
+            rs = rs[:-1]
+        return rs
+
 
 
 def _adjust_prices(hist_data, price_list=None):
